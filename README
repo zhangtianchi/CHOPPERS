@@ -1,0 +1,40 @@
+README                                          |*******************************************************|
+                                                |*                     CHOPPERS                        *|
+                                                |*  Calculate gadget format spHerical halO ProPERtieS  *|
+                                                |*******************************************************|
+
+Author:  Tianchi Zhang 
+CCG-NAOC-CAS 2019.6.3           
+
+This code is based on SUBFIND(Springel et al. 2001) only need dark matter halo position for computing GADGET format cosmological simulation spherical halo(not include subhalo) properties.
+
+Language: The code is written in standard C language, and should run on all parallel platforms that support MPI.
+
+Required Library: GSL(Data fitting using least square method, calculate matrix eigenvalues)
+
+Running the code:     The details are in run.sh
+
+    make clean
+    make
+    mpirun -np ncores ./CHOPPERS  Datapath Snapshotnum Nfiles Outputname       Note: Datapath include simulation snapshot and SUBFIND catalogue. Use other halo finder convert to SUBFIND format first, toolbox have additional parallel codes help you in doing this, for HBT+ need HDF5 Library.  
+
+Makefile Options:
+
+    1. HBT          Set this if you want to deal with HBT+(Han et al. 2018) data, default is SUBFIND data. 
+    2. UNBINDING    If set, code use AHF halo finder method( Assume that the density of a halo distributes spherically and calculate the potential of every particle to get escape velocity, if a particle has a velocity great than escape velocity, then it is unbound and is removed from the particle list of the halo, iteratively remove unbound particles in the new particle set and calculate the new center-of-mass position until <3 particles are removed or the iteration number Niter >10.) to remove unbound particle, and output after unbinding algorithm halo properties into Outputname/halo_XXX, XXX is Snapshotnum
+    3. HALOID       If set, output halo particle ID into Outputname/halo_id_XXX, This will be useful for tracking halo particles and matching halo.
+    4. PROJECTION   If set, output halo CIC projection from three directions into Outputname/halo_pic_XXX, the CIC grid number and region around the halo can be set in the allvars.h. This will be useful for visualizing spatial structure of halo and making animation of halo evolution. Note: This option can consume large amounts of CPU time and memory resources.
+    5. OUTPE        If set, calculate halo potential energy used by particle-particle(PP) method( O(n^2) ), if halo particle number great than one million, this consume more time. In the future, I will use octree method( O(nlogn) ) instead of PP method.
+
+Output halo properties:
+
+    halo position, halo peculiar velocity, halo center of mass, halo specific angular momentum, halo inertia tensor, halo radius(use halo position calculate r200, radius of a simulated halo with its mean density inside r200 being 200 times the critical density), halo mass(M200), halo particle number(N200), V200(sqrt(G*M200/r200)), maximum of rotation curve, radius of rotation curve maximum, half mass radius, Bullock' 2001 spin parameter, Peebles' 1969 spin parameter( need option OUTPE ), Power 2003 convergence radius, halo concentration used by fit NFW( in allvars.h set fit Nbin and fit range ), halo concentration used by Prada 2012 definition, halo velocity dispersion, largest ( second, thrid ) axis of moment of inertia tensor( use GSL compute inertia tensor eigenvalues ), halo specific kinetic( potential ) energy, halo subhalo fraction, Thomas 2001 center of mass displacement, Neto 2007 virial ratio, halo density(circular velocity) profile( in allvars.h set Nbin and range ).
+    If open option HBT, halo trackid, halo birth will output.
+    In toolbox/IDL, have IDL language code read halo_XXX, halo_id_XXX, halo_pic_XXX
+
+This code currently does not support zoom in simulation and hydrodynamic simulation, I will add this module in the future.
+
+If you find problem or have better idea about CHOPPERS, please contact me as soon as possible. My email is tczhang@nao.cas.cn.
+
+
+
