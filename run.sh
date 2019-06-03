@@ -1,13 +1,32 @@
-#!/bin/bash
+#!/bin/sh
 
-git init
 
-git add .
+export MPI_NUM_THREADS=16
 
-git commit -m “second”
+ulimit -m unlimited #memory
+ulimit -s unlimited #stack
+ulimit -v unlimited #virtual
 
-git remote rm origin
+files=128
 
-git remote add origin git@github.com:zhangtianchi/CHOPPERS.git
+haloname=halo
 
-git push -f origin master
+path=/home/tczhang/work1
+
+snap=100
+
+
+mpirun -np $MPI_NUM_THREADS   ./CHOPPERS  $path  $snap  $files $haloname    1>>$path/log.txt 2>&1 
+
+
+
+
+
+
+
+
+
+
+
+
+
