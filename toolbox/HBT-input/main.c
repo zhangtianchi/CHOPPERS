@@ -80,7 +80,7 @@ Halo[j].Msub = (float)TotNbound * Mp;
 for (j = 0; j <FILENR; j++)
     {
 i=Halo[j].TrackId;
-    fprintf(fp,"%g\t%g\t%g\t%g\t%g\t%g\t%d\t%d\t%d\n",sub[i].ComovingMostBoundPosition[0],sub[i].ComovingMostBoundPosition[1],sub[i].ComovingMostBoundPosition[2],sub[i].R200CritComoving,Halo[j].Msub / (sub[i].M200Crit + Halo[j].Msub) ,sub[i].M200Crit,sub[i].TrackId,sub[i].SnapshotIndexOfBirth,sub[i].Rank);
+    fprintf(fp,"%g\t%g\t%g\t%g\t%g\t%g\t%d\t%d\t%d\n",sub[i].ComovingMostBoundPosition[0],sub[i].ComovingMostBoundPosition[1],sub[i].ComovingMostBoundPosition[2],sub[i].R200CritComoving,sub[i].M200Crit, Halo[j].Msub / (sub[i].M200Crit + Halo[j].Msub), sub[i].TrackId,sub[i].SnapshotIndexOfBirth,sub[i].Rank);
     } 
 fclose(fp);
 
