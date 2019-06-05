@@ -287,16 +287,17 @@ fflush(Logfile);
         fclose(hfd);
 #endif
         free(data); 
+
 #ifndef UNBINDING
 #ifdef PROJECTION
         float lbox;
         lbox=2.0*HaloRadii;
         ngrid =NGRID;
+        fwrite(&Pg,sizeof(int),1,pfd);        //  nhalo
         fwrite(&ngrid,sizeof(int),1,pfd);     //  ngrid
         fwrite(&lbox,sizeof(float),1,pfd);    //  lbox
-        fwrite(&Pg,sizeof(int),1,pfd);      //  nhalo
         int tpic=0;    
-        for(gr = 0; gr < Ngroups; gr++)
+        for(gr = 0; gr < Pg; gr++)
 	    {
 	    if(Halo_M_Crit200[gr] < lowmass) continue;
 	    tpic=get_halo_cic(gr);

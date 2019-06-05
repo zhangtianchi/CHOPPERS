@@ -30,17 +30,20 @@ double *Griding_CIC( particle *P, int N, int SIZE, double L )  // SIZE is Halo_N
   
 		if(ibin > (N - 1) || ibin < 0) 
         {
-        printf("error: ibin exceeds boundary: %d,%d,%d,%d", n, ibin, jbin, kbin);
+        printf("error: ibin exceeds boundary: halo particle id: %d, %d,%d,%d\n", n, ibin, jbin, kbin);
+        printf("error: pos: %g, %g, %g\n", P[n].pos[0], P[n].pos[1], P[n].pos[2]);
         endrun(1);
         }
 		if(jbin > (N - 1) || jbin < 0) 
         {
-        printf("error: ibin exceeds boundary: %d,%d,%d,%d", n, ibin, jbin, kbin);
+        printf("error: jbin exceeds boundary: halo particle id: %d, %d,%d,%d\n", n, ibin, jbin, kbin);
+        printf("error: pos: %g, %g, %g\n", P[n].pos[0], P[n].pos[1], P[n].pos[2]);
         endrun(1);
         }
 		if(kbin > (N - 1) || kbin < 0) 
         {
-        printf("error: ibin exceeds boundary: %d,%d,%d,%d", n, ibin, jbin, kbin);
+        printf("error: kbin exceeds boundary: halo particle id: %d, %d,%d,%d\n", n, ibin, jbin, kbin);
+        printf("error: pos: %g, %g, %g\n", P[n].pos[0], P[n].pos[1], P[n].pos[2]);
         endrun(1);
         }
 		hx = P[n].pos[0] / H - ibin - 0.5;
@@ -128,6 +131,11 @@ double *Griding_CIC( particle *P, int N, int SIZE, double L )  // SIZE is Halo_N
 int get_halo_cic(int grp)
 {
 
+#ifdef DEBUG
+fprintf(Logfile,"In get_halo_cic function, begin Projection\n");
+fflush(Logfile);
+#endif
+
     int dummy, i,j,k, count,nvir;
     char buf[1000];
     FILE *fd;
@@ -171,7 +179,13 @@ int get_halo_cic(int grp)
 
     cellsize = BoxSize / (double) base;
 
-    cells = (int) (  rvir / cellsize + 2.0);
+
+    cells = (int) (  HaloRadii / cellsize + 2 );
+
+#ifdef DEBUG
+fprintf(Logfile,"In get_halo_cic function, cellsize=%g, HaloRadii/cellsize=%g, cells=%d\n",cellsize, HaloRadii/cellsize, cells);
+fflush(Logfile);
+#endif
 
     cx = (int) (pos[0] / cellsize);
     cy = (int) (pos[1] / cellsize);
@@ -211,6 +225,7 @@ int get_halo_cic(int grp)
 	    }
 
     ppos = (float *) malloc(3 * sizeof(float) * count);
+
 
     count = 0;
     
@@ -271,6 +286,7 @@ fflush(Logfile);
 #endif
 
     tm = (particle *) malloc(sizeof(particle) * count);
+    memset(tm, 0, sizeof(particle) * count);  // initialization
 
     for (i = 0; i < count; i++)
     {
@@ -281,14 +297,17 @@ fflush(Logfile);
     }
     free(ppos);
     qsort(tm, count, sizeof(particle), rad_sort_particle);
+
     count = 0;
-    while (sqrt(tm[count].rad) <= HaloRadii) 
+    while (sqrt(tm[count].rad) < HaloRadii) 
  	count++;
-    cicp = (particle *) malloc(sizeof(particle) * count);
+
 #ifdef DEBUG
-fprintf(Logfile,"In get_halo_cic function,  %g Mpc/h Np=%d\n",HaloRadii,count);
+fprintf(Logfile,"In get_halo_cic function, less than %g Mpc/h Np=%d\n",HaloRadii,count);
 fflush(Logfile);
 #endif
+
+    cicp = (particle *) malloc(sizeof(particle) * count);
 
     for (i = 0; i < count; i++) 
       {
