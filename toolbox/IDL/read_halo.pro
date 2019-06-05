@@ -3,7 +3,7 @@ close,/all
 
 
 
-openr,1,'/data/inspur_disk01/userdir/tczhang/work4/grid/halo_051/halo_051.0'
+openr,1,'/data/halo_051/halo_051.0'
 ng=0L
 rhobin=0L
 vcbin=0L

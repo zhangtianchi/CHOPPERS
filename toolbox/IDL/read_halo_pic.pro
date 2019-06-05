@@ -1,15 +1,15 @@
 close,/all
 
-openr,1,'/data/inspur_disk01/userdir/tczhang/work4/grid/halo_134/halo_pic_134.0'
+openr,1,'/data/halo_134/halo_pic_134.0'
+nhalo=0L
+readu,1,nhalo
+print,"Nhalo= ", nhalo
 ngrid=0L
 readu,1,ngrid
 print,"Ngrid= ", ngrid
 lbox=0.0
 readu,1,lbox
 print,"Lbox= ", lbox
-nhalo=0L
-readu,1,nhalo
-print,"Nhalo= ", nhalo
 
 picture = {$
          sxy         :dblarr(ngrid,ngrid),$

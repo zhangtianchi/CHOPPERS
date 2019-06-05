@@ -18,23 +18,23 @@ int main(int argc, char **argv)
 
 if(argc != 4)
     {
-          fprintf(stderr, "\n  usage: HBT2HaloTrace+outputdir+snap+spinfilename\n\n");
+          fprintf(stderr, "\n  usage: HBT2HaloTrace+outputdir+snap+filename\n\n");
       exit(1);
     }
 
 /////////////////////////////////////////////////////////////////////////////////
 int snap,i,j,k,FILENR;
 int TotNbound=0;
-char spinfilename[256],output[256],buf[500],buf1[500];
+char filename[256],output[256],buf[500],buf1[500];
 strcpy(output, argv[1]);
 snap=atoi(argv[2]);
-strcpy(spinfilename, argv[3]);
+strcpy(filename, argv[3]);
 nsub=loadsubcat(output,snap);
 printf("snap_%03d Nsub=%d\n",snap,nsub);
 FILE *fp;
 float Mp;
 /*******************Load Trackid****************************/
-sprintf(buf, "%s/ALL/%s",output,spinfilename);
+sprintf(buf, "%s/%s",output,filename);
 //printf("%s\n",buf);
 if((fp=fopen(buf,"r"))==NULL)
 {	
@@ -49,7 +49,7 @@ if((fp=fopen(buf,"r"))==NULL)
              fscanf(fp,"%d",&Halo[i].TrackId);
     }  
   fclose(fp);
-sprintf(buf1,"%s/match-trackid_Subfind_Used_%03d",output,snap);
+sprintf(buf1,"%s/trackid_Subfind_Used_%03d",output,snap);
 if((fp=fopen(buf1,"w"))==NULL)
 {	
 		printf("Cann't open  file\n");
@@ -75,7 +75,7 @@ TotNbound+=sub[i].Nbound;
 }
 Halo[j].Msub = (float)TotNbound * Mp;
 }
-
+//////////////////////////////////////////////////////////////////////////////////////
 /* pick  halo  */
 for (j = 0; j <FILENR; j++)
     {
