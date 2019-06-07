@@ -1,7 +1,7 @@
-README                                          |*******************************************************|
-                                                |*                     CHOPPERS                        *|
-                                                |*  Calculate gadget format spHerical halO ProPERtieS  *|
-                                                |*******************************************************|
+README                              |*******************************************************|
+                                    |*                     CHOPPERS                        *|
+                                    |*  Calculate gadget format spHerical halO ProPERtieS  *|
+                                    |*******************************************************|
 
 Author:  Tianchi Zhang 
 CCG-NAOC-CAS 2019.6.3           
@@ -29,6 +29,7 @@ Makefile Options:
 Output halo properties:
 
     halo position, halo peculiar velocity, halo center of mass, halo specific angular momentum, halo inertia tensor, halo radius(use halo position calculate r200, radius of a simulated halo with its mean density inside r200 being 200 times the critical density), halo mass(M200), halo particle number(N200), V200(sqrt(G*M200/r200)), maximum of rotation curve, radius of rotation curve maximum, half mass radius, Bullock' 2001 spin parameter, Peebles' 1969 spin parameter( need option OUTPE ), Power 2003 convergence radius, halo concentration used by fit NFW( in allvars.h set fit Nbin and fit range ), halo concentration used by Prada 2012 definition, halo velocity dispersion, largest ( second, thrid ) axis of moment of inertia tensor( use GSL compute inertia tensor eigenvalues ), halo specific kinetic( potential ) energy, halo subhalo fraction, Thomas 2001 center of mass displacement, Neto 2007 virial ratio, halo density(circular velocity) profile( in allvars.h set Nbin and range ).
+    Note: about position and radius all in comoving coordinates, other properties in physical coordinates.
     If open option HBT, halo trackid, halo birth will output.
     In toolbox/IDL, have IDL language code read halo_XXX, halo_id_XXX, halo_pic_XXX
 

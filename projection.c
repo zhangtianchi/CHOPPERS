@@ -184,6 +184,7 @@ fflush(Logfile);
 
 #ifdef DEBUG
 fprintf(Logfile,"In get_halo_cic function, cellsize=%g, HaloRadii/cellsize=%g, cells=%d\n",cellsize, HaloRadii/cellsize, cells);
+fprintf(Logfile,"In get_halo_cic function, Base=%d, hashbits=%d\n",base,hashbits);
 fflush(Logfile);
 #endif
 

@@ -16,7 +16,7 @@
 #define SQR(a) (a*a)
 
 /* use moment of inertia calc a(sqrt(lambda1,max)), b, c */
-void shape( float E[], float tensor[] )   //   return a, b, c and inertia tensor  
+void shape( float E[], float tensor[] )   //   return a, b, c and inertia tensor  in phy unit 
 {
 
   double inertia[6];
@@ -30,12 +30,12 @@ void shape( float E[], float tensor[] )   //   return a, b, c and inertia tensor
 
 for(i = 0; i < np; i++)
 {
-inertia[0]+=SQR(data[i].pos[0]);  //Ixx
-inertia[3]+=SQR(data[i].pos[1]);  //Iyy
-inertia[5]+=SQR(data[i].pos[2]);  //Izz
-inertia[1]+=data[i].pos[0]*data[i].pos[1]; //Ixy
-inertia[2]+=data[i].pos[0]*data[i].pos[2]; //Ixz
-inertia[4]+=data[i].pos[1]*data[i].pos[2]; //Iyz
+inertia[0]+=SQR(data[i].pos[0] * Time );  //Ixx
+inertia[3]+=SQR(data[i].pos[1] * Time );  //Iyy
+inertia[5]+=SQR(data[i].pos[2] * Time  );  //Izz
+inertia[1]+=data[i].pos[0]*data[i].pos[1]*SQR(Time); //Ixy
+inertia[2]+=data[i].pos[0]*data[i].pos[2]*SQR(Time); //Ixz
+inertia[4]+=data[i].pos[1]*data[i].pos[2]*SQR(Time); //Iyz
 }
 for(i = 0; i < 6; i++)
   tensor[i] = inertia[i];

@@ -32,7 +32,7 @@ void vc_profile(int gr)
 	velnp[k] = count;
 	velr[k] = pow(10., logr0 + dlogr * k) / Halo_R_Crit200[gr];  //  r / r200 
 	if (count>0)
-      velv[k] = sqrt( G * PartMass * count / pow( 10., logr0 + dlogr * k ) );     // Vc(r)
+      velv[k] = sqrt( G * PartMass * count / (pow( 10., logr0 + dlogr * k ) * Time));     // Vc(r) phy unit
 	else
 	  velv[k]=0.0;
 	k++;

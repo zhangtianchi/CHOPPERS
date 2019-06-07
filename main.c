@@ -99,7 +99,7 @@ if(ThisTask == 0)
   DELTA=overdensity(Omega0,1.0/Time-1.0);
   z=1.0/Time-1.0;
   omegaz = Omega0 * pow(1 + z,3) / (Omega0 * pow(1 + z, 3) + (1 - Omega0 - OmegaLambda) * pow(1 + z, 2) + OmegaLambda);
-  RHO_CRIT=(3 * Omega0 * Hubble * Hubble / (8 * M_PI * G))/omegaz;
+  RHO_CRIT=(3 * Omega0 * Hubble * Hubble / (8 * M_PI * G))/omegaz;  // get physical critial density
 
   while(flag == 0)
     {
@@ -185,7 +185,7 @@ fflush(Logfile);
 	  halo.n200 = (int)(Halo_M_Crit200[gr] / PartMass );
 	  halo.r200 = Halo_R_Crit200[gr];
 	  halo.rhalf = Rhalf;
-	  halo.v200 = sqrt( G * halo.m200 / halo.r200 );
+	  halo.v200 = sqrt( G * halo.m200 / (halo.r200 * Time ) ); // phy unit
 	  halo.vmax = Vmax;
 	  halo.rmax = Rmax;
       temp = malloc(sizeof(float)*3);

@@ -66,6 +66,7 @@ int load_hash_table(void)
   PartMass = header.mass[1];
 #ifdef DEBUG
   fprintf(Logfile, "TotNumPart=%d%09d\n", (int) (TotNumPart / 1000000000), (int) (TotNumPart % 1000000000));
+  fprintf(Logfile, "hashtabsize=%d\n", header.hashtabsize );
   fflush(Logfile);
 #endif
   HashTable = malloc(HashTabSize * sizeof(int));
@@ -155,7 +156,7 @@ void load_sub_catalogue(void)
     my_fread(&TotNgroups, sizeof(int), 1, fd);
     my_fread(&Nfiles, sizeof(int), 1, fd);
     my_fread(&Nsubhalos, sizeof(int), 1, fd);
-    printf("In Task %d, Snap=%d, rhoc=%g, z=%g, Nhalo=%d, Nsub=%d\n", ThisTask, SnapshotNum, RHO_CRIT, 1.0/Time-1.0, Ngroups, Nsubhalos);
+    printf("In Task %d, Snap=%d, rhoc=%g, z=%g, TotNgroups=%d, Nhalo=%d, Nsub=%d\n", ThisTask, SnapshotNum, RHO_CRIT, 1.0/Time-1.0, TotNgroups, Ngroups, Nsubhalos);
     fflush(stdout);
 
     NsubPerHalo = malloc(sizeof(int)*Ngroups);
@@ -533,6 +534,7 @@ int get_spherical_region_coordinates(int grp)
             data[i].id = iid[i];
 #endif
 	data[i].rad = data[i].pos[0] * data[i].pos[0] + data[i].pos[1] * data[i].pos[1] + data[i].pos[2] * data[i].pos[2];
+        //data[i].rad = Time * Time * data[i].rad;
     }
     free(ppos);
     free(vvel);
@@ -551,10 +553,10 @@ fflush(Logfile);
     double tmm=0.0;    
     for( i=0; i<count; i++ )
     {
-        tmm=pow( PartMass * (i+1) / ( 200.0 * RHO_CRIT * 4.0 * 3.1415926 /3.0   ) , 1.0 / 3.0  );
-        if(sqrt(data[i].rad) - tmm > 0)
+        tmm=pow( PartMass * (i+1) / ( 200.0 * RHO_CRIT * 4.0 * 3.1415926 /3.0   ) , 1.0 / 3.0  ); // Comoving r200
+        if(sqrt(data[i].rad) - tmm > 0)  // tmm * Time is physical unit and Time * sqrt(data[i].rad) is also physical unit, so it is no problem!
         {
-        Halo_R_Crit200[grp] = sqrt(data[i].rad);
+        Halo_R_Crit200[grp] = sqrt(data[i].rad);   // Comoving r200
         Halo_M_Crit200[grp] = (i + 1) * PartMass;
         break;
         }
@@ -568,7 +570,7 @@ fflush(Logfile);
         }
 
 #ifdef DEBUG
-fprintf(Logfile,"In halo %d, after calcr200, M200=%g, r200=%g, N200=%d\n",grp ,Halo_M_Crit200[grp], Halo_R_Crit200[grp], (int)(Halo_M_Crit200[grp]/PartMass));
+fprintf(Logfile,"In halo %d, after calcr200, M200=%g, r200=%g, r200phy=%g, N200=%d\n",grp ,Halo_M_Crit200[grp], Halo_R_Crit200[grp], Halo_R_Crit200[grp]*Time, (int)(Halo_M_Crit200[grp]/PartMass));
 fflush(Logfile);
 #endif
 
@@ -680,7 +682,7 @@ fflush(Logfile);
           Rmax = sqrt( data[i].rad );    
           }
 	  }
-    Vmax=sqrt(G*PartMass*Vmax);
+    Vmax=sqrt(G*PartMass*Vmax/Time); // phy unit
 
 
 #ifdef UNBINDING

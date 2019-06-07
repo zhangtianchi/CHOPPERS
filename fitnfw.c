@@ -192,7 +192,7 @@ double cnfw(int gr)
     float *temp1,*temp2;
     double rvir,con;
     nbin = DENSNBIN;
-    rvir = Halo_R_Crit200[gr];
+    rvir = Halo_R_Crit200[gr] * Time;   // phy unit 
     nvir=(int)(Halo_M_Crit200[gr] / PartMass);
 
 for(j = 0; j < nbin; j++)
@@ -207,7 +207,7 @@ for(k = 0, j = 0; j < nbin; j++)
 {
     if(logrho[j] != 0.0)
     {    
-    temp1[k] = pow(10.0, logr[j]);
+    temp1[k] = pow(10.0, logr[j]) * Time;  // phy unit
     temp2[k] = log( pow( 10.0, logrho[j] ) / pow( Time, 3.0 ) );  //rho_phy=(1+z)^3*rho_comoving
     k++;
     }    

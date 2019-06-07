@@ -68,7 +68,7 @@ for(j = 0; j < 3; j++)
   sam[1] = ycenter;
   sam[2] = zcenter;
 // spin
-hspin = sqrt(xcenter*xcenter+ycenter*ycenter+zcenter*zcenter) / ( sqrt(2.0) * sqrt(G*PartMass*N200 / r200) * r200);
+hspin = sqrt(xcenter*xcenter+ycenter*ycenter+zcenter*zcenter) / ( sqrt(2.0) * sqrt(G*PartMass*N200 / (r200 * Time ) ) * Time * r200);  // phy unit spin
 return hspin;
 }
 

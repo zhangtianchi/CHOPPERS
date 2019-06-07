@@ -12,7 +12,7 @@
 #define KAPPA            1.0            //   P03 rconv kappa
 #define Rpromin          0.05           //   output density profile (Vc) min = Rpromin*R200, fit NFW also use it.
 #define Rpromax          1.0            //   output density profile (Vc) max = Rpromax*R200
-#define Ncut_fitnfw      1000           //   if Np < 1000 halo  concentration=0, else use fitnfw.c or vmaxfit
+#define Ncut_fitnfw      100           //   if Np < 1000 halo  concentration=0, else use fitnfw.c or vmaxfit
 #define VELNBIN          20             //   density profile (Vc) bin number, fit NFW also use it.
 #define NGRID            1024           //   CIC grid number
 #define HaloRadii        4.0            //   unit in Mpc/h    2.0*HaloRadii is CIC BoxSize 
@@ -101,6 +101,7 @@ typedef struct
 
 typedef struct 
 {
+// Note: about radius and position, all in comoving unit; about velocity and other physical properties, all in physical unit.
   float pos[3];	             /* halo position */
   float vel[3];              /* halo velocity in physical unit */
   float sam[3];              /* halo specific angular momentum */
