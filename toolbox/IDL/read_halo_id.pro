@@ -1,6 +1,6 @@
 close,/all
 
-openr,1,'/data/halo_051/halo_id_051.0'
+openr,1,'/data/inspur_disk01/userdir/tczhang/work4/grid/halo_051/halo_id_051.0'
 Ngroups=0L
 readu,1,Ngroups
 print,'Nhalo=',Ngroups

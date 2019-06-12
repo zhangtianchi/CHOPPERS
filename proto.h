@@ -47,6 +47,8 @@ float pspin( int gr, float ke, float pe );
 #ifdef PROJECTION
 int Index(int x, int y, int z);
 double *Griding_CIC( particle *P, int N, int SIZE, double L );
-int get_halo_cic(int grp);
+float get_halo_cic(int grp);
 #endif
 
+float funNFW(int gr, float c, float r);
+float bestfit(int gr, float c);

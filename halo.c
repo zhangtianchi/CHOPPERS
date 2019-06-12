@@ -156,7 +156,7 @@ void load_sub_catalogue(void)
     my_fread(&TotNgroups, sizeof(int), 1, fd);
     my_fread(&Nfiles, sizeof(int), 1, fd);
     my_fread(&Nsubhalos, sizeof(int), 1, fd);
-    printf("In Task %d, Snap=%d, rhoc=%g, z=%g, TotNgroups=%d, Nhalo=%d, Nsub=%d\n", ThisTask, SnapshotNum, RHO_CRIT, 1.0/Time-1.0, TotNgroups, Ngroups, Nsubhalos);
+    printf("In Task %d, Snap=%d, ScaleFactor=%g, rhoc=%g, z=%g, TotNgroups=%d, Nhalo=%d, Nsub=%d\n", ThisTask, SnapshotNum, Time, RHO_CRIT, 1.0/Time-1.0, TotNgroups, Ngroups, Nsubhalos);
     fflush(stdout);
 
     NsubPerHalo = malloc(sizeof(int)*Ngroups);
@@ -534,7 +534,6 @@ int get_spherical_region_coordinates(int grp)
             data[i].id = iid[i];
 #endif
 	data[i].rad = data[i].pos[0] * data[i].pos[0] + data[i].pos[1] * data[i].pos[1] + data[i].pos[2] * data[i].pos[2];
-        //data[i].rad = Time * Time * data[i].rad;
     }
     free(ppos);
     free(vvel);
@@ -562,12 +561,6 @@ fflush(Logfile);
         }
     }
 
-    for( i=0; i<count; i++ )
-        if( PartMass * i > 0.5 * Halo_M_Crit200[grp])
-        {
-            Rhalf = sqrt( data[i].rad );
-            break;
-        }
 
 #ifdef DEBUG
 fprintf(Logfile,"In halo %d, after calcr200, M200=%g, r200=%g, r200phy=%g, N200=%d\n",grp ,Halo_M_Crit200[grp], Halo_R_Crit200[grp], Halo_R_Crit200[grp]*Time, (int)(Halo_M_Crit200[grp]/PartMass));
@@ -623,11 +616,11 @@ fflush(Logfile);
 #endif
 	      data[i].rad = tmp[i].rad;
       }
+    qsort(data, count, sizeof(particle), rad_sort_particle);
 
     free(tmp);
 #ifdef UNBINDING
 
-//count = (int)( Halo_M_Crit200[grp] / PartMass );  //  same as L-HaloProperties
 
 int newn200=0;
 tmp = (particle *) malloc(sizeof(particle) * count);
@@ -670,10 +663,15 @@ fflush(Logfile);
             break;
         }
 
+
     Vmax=0;
     Rmax=0;
-    for (i = 0; i < nvir; i++) 
-	if(i > nvir/20.0) 
+#ifdef UNBINDING
+    for (i = 0; i < newn200; i++) 
+#else
+    for (i = 0; i < count; i++) 
+#endif
+	if(i > 20) 
 	  {
 	    vv=(i+1)/sqrt(data[i].rad);
           if(vv>Vmax)
@@ -683,7 +681,6 @@ fflush(Logfile);
           }
 	  }
     Vmax=sqrt(G*PartMass*Vmax/Time); // phy unit
-
 
 #ifdef UNBINDING
     return newn200;
@@ -725,4 +722,9 @@ double fof_periodic(double x)
 
     return x;
 }
-
+/*
+#ifdef DEBUG
+fprintf(Logfile,"In halo %d, Np=%d, r=%g, Vr=%g\n", grp, i, sqrt(data[i].rad), sqrt(G*PartMass*vv/Time) );
+fflush(Logfile);
+#endif
+*/

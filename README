@@ -4,7 +4,7 @@ README                              |*******************************************
                                     |*******************************************************|
 
 Author:  Tianchi Zhang 
-CCG-NAOC-CAS 2019.6.3           
+CCG-NAOC-CAS, June 3 2019          
 
 This code is based on SUBFIND(Springel et al. 2001) only need dark matter halo position for computing GADGET format cosmological simulation spherical halo(not include subhalo) properties.
 
@@ -28,7 +28,7 @@ Makefile Options:
 
 Output halo properties:
 
-    halo position, halo peculiar velocity, halo center of mass, halo specific angular momentum, halo inertia tensor, halo radius(use halo position calculate r200, radius of a simulated halo with its mean density inside r200 being 200 times the critical density), halo mass(M200), halo particle number(N200), V200(sqrt(G*M200/r200)), maximum of rotation curve, radius of rotation curve maximum, half mass radius, Bullock' 2001 spin parameter, Peebles' 1969 spin parameter( need option OUTPE ), Power 2003 convergence radius, halo concentration used by fit NFW( in allvars.h set fit Nbin and fit range ), halo concentration used by Prada 2012 definition, halo velocity dispersion, largest ( second, thrid ) axis of moment of inertia tensor( use GSL compute inertia tensor eigenvalues ), halo specific kinetic( potential ) energy, halo subhalo fraction, Thomas 2001 center of mass displacement, Neto 2007 virial ratio, halo density(circular velocity) profile( in allvars.h set Nbin and range ).
+    halo position, halo peculiar velocity, halo center of mass, halo specific angular momentum, halo inertia tensor, halo radius(use halo position calculate r200, radius of a simulated halo with its mean density inside r200 being 200 times the critical density), halo mass(M200), halo particle number(N200), V200(sqrt(G*M200/r200)), maximum of rotation curve, radius of rotation curve maximum, half mass radius, Bullock' 2001 spin parameter, Peebles' 1969 spin parameter( need option OUTPE ), Power 2003 convergence radius, halo concentration used by fit NFW( in allvars.h set fit Nbin and fit range ), The best fit parameter is found by minimizing the figure-of-merit function,  halo concentration used by Prada 2012 definition, halo velocity dispersion, largest ( second, thrid ) axis of moment of inertia tensor( use GSL compute inertia tensor eigenvalues ), halo specific kinetic( potential ) energy( potential need option OUTPE ), halo subhalo fraction( HBT option need input used by toolbox ), Thomas 2001 center of mass displacement, Neto 2007 virial ratio( need option OUTPE ), halo density(circular velocity) profile( in allvars.h set Nbin and range ).
     Note: about position and radius all in comoving coordinates, other properties in physical coordinates.
     If open option HBT, halo trackid, halo birth will output.
     In toolbox/IDL, have IDL language code read halo_XXX, halo_id_XXX, halo_pic_XXX
@@ -38,4 +38,5 @@ This code currently does not support zoom in simulation and hydrodynamic simulat
 If you find problem or have better idea about CHOPPERS, please contact me as soon as possible. My email is tczhang@nao.cas.cn.
 
 
-
+June  6 2019    fix bug:    change some properties in physical coordinates.
+June 10 2019    add properties:  The best fit parameter.

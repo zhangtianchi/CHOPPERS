@@ -7,15 +7,15 @@
 #define UnitMass_in_g                      1.989e+43
 #define UnitVelocity_in_cm_per_s           100000
 ///////////////////////////////////////Parameter///////////////////////////////////////////
-#define NMIN             1              //   halo resolution
+#define NMIN             1000            //   halo resolution
 #define DENSNBIN         20             //   density profile bin number, fit NFW also use it.
 #define KAPPA            1.0            //   P03 rconv kappa
 #define Rpromin          0.05           //   output density profile (Vc) min = Rpromin*R200, fit NFW also use it.
 #define Rpromax          1.0            //   output density profile (Vc) max = Rpromax*R200
-#define Ncut_fitnfw      100           //   if Np < 1000 halo  concentration=0, else use fitnfw.c or vmaxfit
+#define Ncut_fitnfw      200            //   if Np < Ncut_fitnfw halo  concentration=0, else use fitnfw.c or Pradafunc_fit
 #define VELNBIN          20             //   density profile (Vc) bin number, fit NFW also use it.
 #define NGRID            1024           //   CIC grid number
-#define HaloRadii        4.0            //   unit in Mpc/h    2.0*HaloRadii is CIC BoxSize 
+#define HaloRadii        0              //   unit in Mpc/h    2.0*HaloRadii is CIC BoxSize, if set 0, use HaloRadii = 2 * r200
 
 
 extern int  ThisTask;
@@ -118,6 +118,7 @@ typedef struct
   float spinP;               /* Peebles’ 1969 spin parameter*/
   float rconv;               /* Power 2003 convergence radius */
   float c;	                 /* halo concentration, use GSL fit NFW */
+  float Qfit;	             /* the best fit is found by minimizing the figure-of-merit function*/
   float cvmax;               /* halo concentration, Prada et al. 2012 definition */
   float vdisp;               /* halo velocity dispersion */
   float ea;                  /* first largest axis of moment of inertia tensor */

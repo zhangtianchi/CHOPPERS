@@ -233,6 +233,36 @@ free(temp2);
 return con;
 }
 
+float funNFW(int gr, float c, float r) //  input concentration,r,  return rho_nfw
+{
+    
+float rscale;
+    rscale = Halo_R_Crit200[gr]  / c;
+float deltac;
+    deltac = 200.0 / 3.0 * c * c * c / ( log(1.0 + c) - ( c / (1.0 + c) ) );
+float fnfw;
+    fnfw = deltac * RHO_CRIT / (r / rscale * pow((1.0 + r / rscale),2.0 ));
+return fnfw;
+}
+
+float bestfit(int gr, float c)  // the best fit is found by minimizing the figure-of-merit function
+{
+    int i,Nbin;
+    float sum=0.0;
+    Nbin = DENSNBIN;
+    float r[Nbin], rho[Nbin];
+    for(i = 0; i < Nbin; i++)
+    {
+    r[i] = denr[i] * Halo_R_Crit200[gr];
+    rho[i] = log(denrho[i] * RHO_CRIT ); 
+    }
+    for(i = 0; i < Nbin; i++)
+    sum += pow((rho[i] - log(funNFW(gr, c, r[i]))),2.0) / Nbin ; 
+
+return sum;
+}
+
+
 /*==============================================================================
  * small routine calculating cNFW according to Eq.(9) in Prada et al. (2012)
  *==============================================================================*/

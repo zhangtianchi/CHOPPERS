@@ -105,7 +105,7 @@ if(ThisTask == 0)
     {
         
 #ifdef DEBUG
-      fprintf(Logfile, "doing on Task=%d, SnapshotNum=%d, z=%g, rhoc=%g, FileNr=%d\n\n", ThisTask, SnapshotNum, z, RHO_CRIT,  FileNr);
+      fprintf(Logfile, "doing on Task=%d, SnapshotNum=%d, ScaleFactor=%g, z=%g, rhoc=%g, FileNr=%d\n\n", ThisTask, SnapshotNum, Time, z, RHO_CRIT,  FileNr);
       fflush(Logfile);
 #endif
       realn=0;
@@ -215,6 +215,10 @@ fflush(Logfile);
 	  density_profile(gr);
 	  halo.rconv = rconv;
       halo.c = cnfw(gr);
+      if( halo.n200 >= Ncut_fitnfw )
+      halo.Qfit = bestfit(gr,cnfw(gr));
+      else
+      halo.Qfit=0.0;
       halo.cvmax = cvmax( gr, halo.vmax, halo.v200 );
       halo.PE = 0.0;
       halo.KE = kinetic( );
@@ -255,7 +259,7 @@ fflush(Logfile);
 #endif
 
 #ifdef DEBUG
-fprintf(Logfile,"Halo %d, trackid=%d, birthsnap=%d, New M200=%g, r200=%g, N200=%d, rhalf=%g, cnfw=%g, cvmax=%g, spin=%g\n, pos=%g, %g, %g, vel=%g, %g, %g, cmpos=%g, %g, %g, sam=%g, %g, %g\nInertialTensor=",gr, halo.trackid, halo.birth, halo.m200, halo.r200, (int)(halo.m200/PartMass), halo.rhalf, halo.c, halo.cvmax, halo.spinB, halo.pos[0], halo.pos[1], halo.pos[2], halo.vel[0], halo.vel[1], halo.vel[2], halo.cm[0], halo.cm[1], halo.cm[2], halo.sam[0], halo.sam[1], halo.sam[2]);
+fprintf(Logfile,"Halo %d, trackid=%d, birthsnap=%d, New M200=%g, r200=%g, N200=%d, rhalf=%g, cnfw=%g, Qfit=%g, cvmax=%g, spin=%g\n, pos=%g, %g, %g, vel=%g, %g, %g, cmpos=%g, %g, %g, sam=%g, %g, %g\nInertialTensor=",gr, halo.trackid, halo.birth, halo.m200, halo.r200, (int)(halo.m200/PartMass), halo.rhalf, halo.c, halo.Qfit, halo.cvmax, halo.spinB, halo.pos[0], halo.pos[1], halo.pos[2], halo.vel[0], halo.vel[1], halo.vel[2], halo.cm[0], halo.cm[1], halo.cm[2], halo.sam[0], halo.sam[1], halo.sam[2]);
 for(j = 0; j < 6; j++)
 fprintf(Logfile,"%g, ", halo.InertialTensor[j] );
 fprintf(Logfile,"\nfirst axis=%g, second axis=%g, thrid axis=%g,V200=%g, Vmax=%g, rmax=%g, Vdispersion=%g, soff=%g, kinetic=%g\n\n", halo.ea, halo.eb, halo.ec, halo.v200, halo.vmax, halo.rmax, halo.vdisp, halo.soff, halo.KE);
@@ -291,16 +295,15 @@ fflush(Logfile);
 #ifndef UNBINDING
 #ifdef PROJECTION
         float lbox;
-        lbox=2.0*HaloRadii;
         ngrid =NGRID;
         fwrite(&Pg,sizeof(int),1,pfd);        //  nhalo
         fwrite(&ngrid,sizeof(int),1,pfd);     //  ngrid
-        fwrite(&lbox,sizeof(float),1,pfd);    //  lbox
         int tpic=0;    
         for(gr = 0; gr < Pg; gr++)
 	    {
 	    if(Halo_M_Crit200[gr] < lowmass) continue;
-	    tpic=get_halo_cic(gr);
+	    lbox=get_halo_cic(gr);
+        fwrite(&lbox,sizeof(float),1,pfd);          //  lbox
         for(i= 0; i< ngrid*ngrid; i++)       
         fwrite(&CICxy[i],sizeof(double),1,pfd);     // pic_xy
         for(i= 0; i< ngrid*ngrid; i++)       
@@ -308,10 +311,10 @@ fflush(Logfile);
         for(i= 0; i< ngrid*ngrid; i++)       
         fwrite(&CICxz[i],sizeof(double),1,pfd);     // pic_xz
         }
-        fclose(pfd);
         free(CICxy);
         free(CICxz);
         free(CICyz);
+        fclose(pfd);
 #endif
 #endif
 

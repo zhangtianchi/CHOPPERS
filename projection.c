@@ -128,7 +128,7 @@ double *Griding_CIC( particle *P, int N, int SIZE, double L )  // SIZE is Halo_N
 	return gridP;
 }
 
-int get_halo_cic(int grp)
+float get_halo_cic(int grp)   //return lbox
 {
 
 #ifdef DEBUG
@@ -148,6 +148,7 @@ fflush(Logfile);
     float *ppos;
     double cellsize;
     int cells, cx, cy, cz, ix, iy, iz, iix, iiy, iiz, base, hashbits, hashkey, hashtabsize;
+    float halorange;
 
     sprintf(buf, "%s/snapdir_%03d/%s_%03d.%d", OutputDir, SnapshotNum, SnapshotFileBase,SnapshotNum, 0);
     rvir=Halo_R_Crit200[grp];
@@ -156,6 +157,13 @@ fflush(Logfile);
     pos[0]=SubPos[3*isub];
     pos[1]=SubPos[3*isub+1];
     pos[2]=SubPos[3*isub+2];
+
+    if(HaloRadii == 0)
+      halorange = 2.0 * Halo_R_Crit200[grp]; // use 2 * r200 as range  
+    else
+      halorange = HaloRadii;  //  use allvars.h HaloRadii
+
+
 
     if (!(fd = fopen(buf, "r"))) {
 	printf("can't open file `%s'\n", buf);
@@ -180,10 +188,10 @@ fflush(Logfile);
     cellsize = BoxSize / (double) base;
 
 
-    cells = (int) (  HaloRadii / cellsize + 2 );
+    cells = (int) (  halorange / cellsize + 2 );
 
 #ifdef DEBUG
-fprintf(Logfile,"In get_halo_cic function, cellsize=%g, HaloRadii/cellsize=%g, cells=%d\n",cellsize, HaloRadii/cellsize, cells);
+fprintf(Logfile,"In get_halo_cic function, cellsize=%g, halorange/cellsize=%g, cells=%d\n",cellsize, halorange/cellsize, cells);
 fprintf(Logfile,"In get_halo_cic function, Base=%d, hashbits=%d\n",base,hashbits);
 fflush(Logfile);
 #endif
@@ -300,11 +308,11 @@ fflush(Logfile);
     qsort(tm, count, sizeof(particle), rad_sort_particle);
 
     count = 0;
-    while (sqrt(tm[count].rad) < HaloRadii) 
+    while (sqrt(tm[count].rad) < halorange) 
  	count++;
 
 #ifdef DEBUG
-fprintf(Logfile,"In get_halo_cic function, less than %g Mpc/h Np=%d\n",HaloRadii,count);
+fprintf(Logfile,"In get_halo_cic function,lbox=%g, less than %g Mpc/h Np=%d\n",2.0*halorange,halorange,count);
 fflush(Logfile);
 #endif
 
@@ -312,9 +320,9 @@ fflush(Logfile);
 
     for (i = 0; i < count; i++) 
       {
-	cicp[i].pos[0] = tm[i].pos[0] + HaloRadii;
-	cicp[i].pos[1] = tm[i].pos[1] + HaloRadii;
-	cicp[i].pos[2] = tm[i].pos[2] + HaloRadii;
+	cicp[i].pos[0] = tm[i].pos[0] + halorange;
+	cicp[i].pos[1] = tm[i].pos[1] + halorange;
+	cicp[i].pos[2] = tm[i].pos[2] + halorange;
       }
       free(tm);
 
@@ -326,7 +334,7 @@ fprintf(Logfile,"In get_halo_cic function, ngrid=%d, begin CIC\n",ngrid);
 fflush(Logfile);
 #endif
 
-CIC=Griding_CIC(cicp,ngrid,count,2.0*HaloRadii);  
+CIC=Griding_CIC(cicp,ngrid,count,2.0*halorange);  
 
 #ifdef DEBUG
 fprintf(Logfile,"In get_halo_cic function, end CIC\n");
@@ -360,6 +368,6 @@ fprintf(Logfile,"In get_halo_cic function, end Projection\n");
 fflush(Logfile);
 #endif
 
-    return count;
+    return 2.0*halorange;
 }
 #endif

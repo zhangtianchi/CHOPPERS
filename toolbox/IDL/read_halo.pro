@@ -3,7 +3,7 @@ close,/all
 
 
 
-openr,1,'/data/halo_051/halo_051.0'
+openr,1,'/data/inspur_disk01/userdir/tczhang/work3/halo_134/halo_134.0'
 ng=0L
 rhobin=0L
 vcbin=0L
@@ -30,6 +30,7 @@ halo = {$
          spinP        :0.0, $          ; Peebles 1969 spin Parameter
          rconv        :0.0, $          ; Power 2003 et al. convergence radius
          c            :0.0, $          ; fit NFW concentration
+         Qfit         :0.0, $          ; best fit parameter
          cvmax        :0.0, $          ; vmax concentration
          vdisp        :0.0, $          ; velocity dispersion
          ea           :0.0, $          ; first axis of moment of inertia tensor
@@ -59,7 +60,7 @@ print,'nhalo=',ng
 print,'density_bin=',rhobin
 print,'vc_bin=',vcbin
 
-print, tree
+print, tree[0]
 
 ;print,'pos=',tree.pos
 ;print,'trickid=',tree[0].trackid
@@ -70,7 +71,7 @@ print, tree
 ;print,'vdisp=',tree.vdisp
 ;print,'rmax=',tree.rmax
 ;print,'Vmax=',tree.vmax
-;print,'r200=',tree[0].r200
+print,'r200=',tree[0].r200
 ;print,'virial=',tree.virial
 ;print,'r/r200=',tree[0].denr
 ;print,'rho/rhoc=',tree[0].denrho

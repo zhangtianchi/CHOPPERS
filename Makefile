@@ -8,7 +8,7 @@
 
 OPT   +=   -DHBT  # Use Han2018 et al. HBT+ halo catalogue, close this default SUBFIND halo catalogue
 
-OPT   +=   -DUNBINDING  # Remove unbound particle use calculate spherical potential
+#OPT   +=   -DUNBINDING  # Remove unbound particle use calculate spherical potential
 
 #OPT   +=   -DOUTPE  # Use particle-particle method compute halo potential energy, when Np > 10^6 cost more time!!!!
 
@@ -16,7 +16,7 @@ OPT   +=   -DUNBINDING  # Remove unbound particle use calculate spherical potent
 
 #OPT   +=   -DPROJECTION  # Get around halo CIC projection(xy, yz, xz) save in halo_pic_XXX.X, cost more time!!!, close the UNBINDING
 
-#OPT   +=   -DDEBUG  # Debug every core output in Logfile ( Task_XXX, XXX is core number )
+OPT   +=   -DDEBUG  # Debug every core output in Logfile ( Task_XXX, XXX is core number )
 
 OPTIONS =   -DCOMPILETIMESETTINGS=\""$(OPT)"\"
 
