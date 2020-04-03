@@ -22,9 +22,11 @@ Makefile Options:
 
     1. HBT          Set this if you want to deal with HBT+(Han et al. 2018) data, default is SUBFIND data. 
     2. UNBINDING    If set, code use AHF halo finder method( Assume that the density of a halo distributes spherically and calculate the potential of every particle to get escape velocity, if a particle has a velocity great than escape velocity, then it is unbound and is removed from the particle list of the halo, iteratively remove unbound particles in the new particle set and calculate the new center-of-mass position until <3 particles are removed or the iteration number Niter >10.) to remove unbound particle, and output after unbinding algorithm halo properties into Outputname/halo_XXX, XXX is Snapshotnum
+    3. OCTREE       Use octree method calculate potential, otherwise use particle-particle method compute halo potential, random pick 1000 particles calculate potential, then weighted ( see Neto et. al 2007  )
     3. HALOID       If set, output halo particle ID into Outputname/halo_id_XXX, This will be useful for tracking halo particles and matching halo.
     4. PROJECTION   If set, output halo CIC projection from three directions into Outputname/halo_pic_XXX, the CIC grid number and region around the halo can be set in the allvars.h. This will be useful for visualizing spatial structure of halo and making animation of halo evolution. Note: This option can consume large amounts of CPU time and memory resources.
-    5. OUTPE        If set, calculate halo potential energy used by particle-particle(PP) method( O(n^2) ), if halo particle number great than one million, this consume more time. In the future, I will use octree method( O(nlogn) ) instead of PP method.
+    5. DeltaVir     Use  mvir、rvir,  by Bryan1998 fit equation replace r200 and m200.
+    6. USEHBTR200   When halo become subhalo, if use m200, some halo mass become very large, so use HBT2 orgin r200 of subhaloes.
 
 Output halo properties:
 
@@ -40,3 +42,4 @@ If you find problem or have better idea about CHOPPERS, please contact me as soo
 
 June  6 2019    fix bug:    change some properties in physical coordinates.
 June 10 2019    add properties:  The best fit parameter.
+Dec  12 2019    add octree calculate potential.
