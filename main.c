@@ -80,7 +80,7 @@ if(ThisTask == 0)
 #ifdef DEBUG
   sprintf(buf, "Task_%03d", begSnapshotNum);
   mkdir(buf, 02755);
-  sprintf(buf, "Task_%03d/Task_%03d.%d", begSnapshotNum,begSnapshotNum, ThisTask);
+  sprintf(buf, "Task_%03d/Task_%03d.%d.%d", begSnapshotNum,begSnapshotNum, ThisTask,(int)getpid());
   Logfile = fopen(buf, "w");
 #endif
 
@@ -96,16 +96,19 @@ if(ThisTask == 0)
   load_hash_table();
 
   lowmass=PartMass*NMIN;
-  DELTA=overdensity(Omega0,1.0/Time-1.0);
+  DELTA=Dvir(Omega0,1.0/Time-1.0);
   z=1.0/Time-1.0;
   omegaz = Omega0 * pow(1 + z,3) / (Omega0 * pow(1 + z, 3) + (1 - Omega0 - OmegaLambda) * pow(1 + z, 2) + OmegaLambda);
   RHO_CRIT=(3 * Omega0 * Hubble * Hubble / (8 * M_PI * G))/omegaz;  // get physical critial density
+  RHO_MEAN= PartMass * TotNumPart / pow(BoxSize,3.0);
+  OMZ = Omega0 * pow(1 + z,3) / (Omega0 * pow(1 + z, 3) + (1 - Omega0 - OmegaLambda) * pow(1 + z, 2) + OmegaLambda);
+  Softening = BoxSize / pow(TotNumPart,1.0/3.0) / SOFT;  
 
   while(flag == 0)
     {
         
 #ifdef DEBUG
-      fprintf(Logfile, "doing on Task=%d, SnapshotNum=%d, ScaleFactor=%g, z=%g, rhoc=%g, FileNr=%d\n\n", ThisTask, SnapshotNum, Time, z, RHO_CRIT,  FileNr);
+      fprintf(Logfile, "doing on Task=%d, SnapshotNum=%d, ScaleFactor=%g, z=%g, rhoc=%g, Dvir=%g, softening=%g, FileNr=%d\n\n", ThisTask, SnapshotNum, Time, z, RHO_CRIT, DELTA, Softening,  FileNr);
       fflush(Logfile);
 #endif
       realn=0;
@@ -168,6 +171,11 @@ fflush(Logfile);
 	{
 	  if(Halo_M_Crit200[gr] < lowmass) continue;
 	  np = get_spherical_region_coordinates(gr);
+#ifdef DEBUG
+fprintf(Logfile,"In halo %d, np=%d\n", gr, np);
+fflush(Logfile);
+#endif
+
 #ifdef HALOID
       Nid += np;
       plen[gr] = np; 
@@ -178,11 +186,65 @@ fflush(Logfile);
 #endif
 	  isub = FirstSubOfHalo[gr];
 
+#ifdef SIMPLIFY
+
       for(j = 0; j < 3; j++)
 	  halo.pos[j] = SubPos[3*isub+j];
 
 	  halo.m200 = Halo_M_Crit200[gr];
-	  halo.n200 = (int)(Halo_M_Crit200[gr] / PartMass );
+	  halo.n200 = (int)( Halo_M_Crit200[gr] / PartMass );
+	  halo.r200 = Halo_R_Crit200[gr];
+	  halo.rhalf = Rhalf;
+	  halo.v200 = sqrt( G * halo.m200 / (halo.r200 * Time ) ); // phy unit
+	  halo.vmax = Vmax;
+	  halo.rmax = Rmax;
+      halo.spinB = 0.0; 
+	  for(i = 0;i < 3;i++)
+      {
+      halo.sam[i] = 0.0;
+      halo.vel[i] = 0.0;
+      halo.cm[i]  = 0.0;
+      }
+      halo.vdisp = 0.0;
+      for(j = 0; j < 6; j++)
+      halo.InertialTensor[j] = 0.0;
+      halo.ea = 0.0;
+      halo.eb = 0.0;
+      halo.ec = 0.0;
+	 // density_profile(gr);
+	  halo.rconv = 0.0;
+      halo.cvmax = 0.0;
+      halo.KE = 0.0;
+	  halo.fsub = 0.0; 
+      halo.soff = 0.0;
+      halo.PE = 0.0;
+      halo.virial = 0.0;
+      halo.spinP = 0.0;
+	  for(i=0;i<DENSNBIN;i++)
+	    {
+	  halo.denr[i]=denr[i];
+	  halo.denrho[i]=denrho[i];
+	  halo.npbin[i]=npbin[i];
+	    }
+	 // fit_density_profile(gr);
+      halo.c = 0.0;
+      halo.Qfit=0.0;
+	  for(i=0;i<VELNBIN;i++)
+	    {
+	  halo.velr[i] = 0.0;
+	  halo.velv[i] = 0.0;
+	  halo.velnp[i] = 0; 
+	    }
+	  halo.trackid = SubLen[isub];
+	  halo.birth = SubOffset[isub];
+      halo.Dfifth = 0.0;
+
+#else
+      for(j = 0; j < 3; j++)
+	  halo.pos[j] = SubPos[3*isub+j];
+
+	  halo.m200 = Halo_M_Crit200[gr];
+	  halo.n200 = (int)( Halo_M_Crit200[gr] / PartMass );
 	  halo.r200 = Halo_R_Crit200[gr];
 	  halo.rhalf = Rhalf;
 	  halo.v200 = sqrt( G * halo.m200 / (halo.r200 * Time ) ); // phy unit
@@ -214,13 +276,7 @@ fflush(Logfile);
       free(temp1);
 	  density_profile(gr);
 	  halo.rconv = rconv;
-      halo.c = cnfw(gr);
-      if( halo.n200 >= Ncut_fitnfw )
-      halo.Qfit = bestfit(gr,cnfw(gr));
-      else
-      halo.Qfit=0.0;
       halo.cvmax = cvmax( gr, halo.vmax, halo.v200 );
-      halo.PE = 0.0;
       halo.KE = kinetic( );
 #ifdef HBT 
       halo.fsub = SubSpin[3*isub];
@@ -232,17 +288,41 @@ fflush(Logfile);
 	  halo.soff  += pow( fof_periodic( halo.pos[j] - halo.cm[j] ), 2.0 );
       halo.soff = sqrt( halo.soff ) / halo.r200;
       halo.virial = 0.0;
-#ifdef OUTPE 
-      halo.PE = potential( );
+#ifdef OCTREE 
+      NumPart = np;
+      halo.PE = Potential();
+#else
+      //halo.PE = potential();
+      halo.PE = 0.0;
+#endif
+#ifdef OCTREE 
       halo.virial = 2.0 * halo.KE / fabs( halo.PE );
       halo.spinP = pspin( gr, halo.KE, halo.PE );   // need calc Potential energy and Kinetic energy
+#else
+      halo.virial = 0.0;
+      halo.spinP = 0.0;
 #endif
 	  for(i=0;i<DENSNBIN;i++)
 	    {
+#ifdef MYWORK
+	  halo.denr[i]=denr[i]*Halo_R_Crit200[gr]*Time; // r phy
+	  halo.denrho[i]=denrho[i]*RHO_CRIT/pow(Time,3.0); // rho phy
+	  //halo.denr[i]=denr[i];
+	  //halo.denrho[i]=denrho[i];
+#else
 	  halo.denr[i]=denr[i];
 	  halo.denrho[i]=denrho[i];
+#endif
 	  halo.npbin[i]=npbin[i];
 	    }
+
+	  fit_density_profile(gr);
+      halo.c = cnfw(gr);
+      if( halo.n200 >= Ncut_fitnfw )
+      halo.Qfit = bestfit(gr,cnfw(gr));
+      else
+      halo.Qfit=0.0;
+
 	  vc_profile(gr);
 	  for(i=0;i<VELNBIN;i++)
 	    {
@@ -253,19 +333,22 @@ fflush(Logfile);
 #ifdef HBT 
 	  halo.trackid = SubLen[isub];
 	  halo.birth = SubOffset[isub];
+      halo.Dfifth = Halo_M_Mean200[gr];
 #else
 	  halo.trackid = 0;
 	  halo.birth = 0;
+      halo.Dfifth = 0.0;
+#endif
+
 #endif
 
 #ifdef DEBUG
 fprintf(Logfile,"Halo %d, trackid=%d, birthsnap=%d, New M200=%g, r200=%g, N200=%d, rhalf=%g, cnfw=%g, Qfit=%g, cvmax=%g, spin=%g\n, pos=%g, %g, %g, vel=%g, %g, %g, cmpos=%g, %g, %g, sam=%g, %g, %g\nInertialTensor=",gr, halo.trackid, halo.birth, halo.m200, halo.r200, (int)(halo.m200/PartMass), halo.rhalf, halo.c, halo.Qfit, halo.cvmax, halo.spinB, halo.pos[0], halo.pos[1], halo.pos[2], halo.vel[0], halo.vel[1], halo.vel[2], halo.cm[0], halo.cm[1], halo.cm[2], halo.sam[0], halo.sam[1], halo.sam[2]);
 for(j = 0; j < 6; j++)
 fprintf(Logfile,"%g, ", halo.InertialTensor[j] );
-fprintf(Logfile,"\nfirst axis=%g, second axis=%g, thrid axis=%g,V200=%g, Vmax=%g, rmax=%g, Vdispersion=%g, soff=%g, kinetic=%g\n\n", halo.ea, halo.eb, halo.ec, halo.v200, halo.vmax, halo.rmax, halo.vdisp, halo.soff, halo.KE);
-#ifdef OUTPE
-fprintf(Logfile,"potential=%g, Virial ratio=%g, Peebles spin=%g\n", halo.PE, halo.virial, halo.spinP);
-#endif
+fprintf(Logfile,"\nfirst axis=%g, second axis=%g, thrid axis=%g,V200=%g, Vmax=%g, rmax=%g, Vdispersion=%g, soff=%g, fsub=%g,  kinetic=%g\n", halo.ea, halo.eb, halo.ec, halo.v200, halo.vmax, halo.rmax, halo.vdisp, halo.soff, halo.fsub, halo.KE);
+fprintf(Logfile,"FifthHalodis=%g\n", halo.Dfifth );
+fprintf(Logfile,"potential=%g, Virial ratio=%g, Peebles spin=%g\n\n", halo.PE, halo.virial, halo.spinP);
 fflush(Logfile);
 #endif
 
@@ -480,11 +563,11 @@ float get_fsub(int nhalo,int *nsub)
   return msub*PartMass/mvir;
 }
 
-float overdensity(float om_0,float z)
+float Dvir(float om_0,float z)
 {
   float omz,d;
-  omz=om_0*pow(1.0+z,3);
-  omz/=om_0*pow(1.0+z,3)+(1-om_0);
+  omz=om_0*pow(1.0+z,3.0);
+  omz/=om_0*pow(1.0+z,3.0)+(1.0-om_0);
 
   d=omz-1.0;
   return 18.0*M_PI*M_PI+82.0*d-39.0*d*d;

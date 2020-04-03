@@ -26,6 +26,8 @@ char SnapshotFileBase[512];
 double Hubble;
 double G;
 double Omega0;
+double RHO_MEAN;
+double OMZ;
 long long TotNumPart;
 
 double OmegaLambda;
@@ -35,6 +37,7 @@ double UnitDensity_in_cgs;
 double UnitEnergy_in_cgs;
 
 double BoxSize;
+double Softening;
 
 struct io_header header;
 
@@ -70,3 +73,12 @@ double rrhos,rrs,connfw;
 int ngrid;
 double *CICxy, *CICyz, *CICxz;
 #endif
+
+int *Nextnode;
+int *Father;
+
+ struct NODE
+*Nodes_base,                    /*!< points to the actual memory allocted for the nodes */
+*Nodes;                         /*!< this is a pointer used to access the nodes which is shifted such that Nodes[All.MaxPart] 
+				  gives the first allocated node */
+struct potdata *P;

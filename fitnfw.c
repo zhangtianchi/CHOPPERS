@@ -196,7 +196,7 @@ double cnfw(int gr)
     nvir=(int)(Halo_M_Crit200[gr] / PartMass);
 
 for(j = 0; j < nbin; j++)
-    if(logrho[j] != 0.0)
+    if(npbin[j] > 5)  // at least each bins have 6 particles. 
     NN++;
 
 
@@ -205,7 +205,7 @@ temp2 = malloc( sizeof( float) * NN);
 
 for(k = 0, j = 0; j < nbin; j++)
 {
-    if(logrho[j] != 0.0)
+    if(npbin[j] > 5)
     {    
     temp1[k] = pow(10.0, logr[j]) * Time;  // phy unit
     temp2[k] = log( pow( 10.0, logrho[j] ) / pow( Time, 3.0 ) );  //rho_phy=(1+z)^3*rho_comoving
@@ -239,7 +239,11 @@ float funNFW(int gr, float c, float r) //  input concentration,r,  return rho_nf
 float rscale;
     rscale = Halo_R_Crit200[gr]  / c;
 float deltac;
+#ifdef DeltaVir
+    deltac = DELTA / 3.0 * c * c * c / ( log(1.0 + c) - ( c / (1.0 + c) ) );
+#else
     deltac = 200.0 / 3.0 * c * c * c / ( log(1.0 + c) - ( c / (1.0 + c) ) );
+#endif
 float fnfw;
     fnfw = deltac * RHO_CRIT / (r / rscale * pow((1.0 + r / rscale),2.0 ));
 return fnfw;

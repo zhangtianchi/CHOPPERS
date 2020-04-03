@@ -7,15 +7,16 @@
 #define UnitMass_in_g                      1.989e+43
 #define UnitVelocity_in_cm_per_s           100000
 ///////////////////////////////////////Parameter///////////////////////////////////////////
-#define NMIN             1000            //   halo resolution
+#define SOFT             50             //  softening is 1/SOFT * mean particle distance, used for compute potential        
+#define NMIN             1              //   halo resolution
 #define DENSNBIN         20             //   density profile bin number, fit NFW also use it.
 #define KAPPA            1.0            //   P03 rconv kappa
 #define Rpromin          0.05           //   output density profile (Vc) min = Rpromin*R200, fit NFW also use it.
 #define Rpromax          1.0            //   output density profile (Vc) max = Rpromax*R200
-#define Ncut_fitnfw      200            //   if Np < Ncut_fitnfw halo  concentration=0, else use fitnfw.c or Pradafunc_fit
+#define Ncut_fitnfw      500            //   if Np < Ncut_fitnfw halo  concentration=0, else use fitnfw.c or Pradafunc_fit
 #define VELNBIN          20             //   density profile (Vc) bin number, fit NFW also use it.
 #define NGRID            1024           //   CIC grid number
-#define HaloRadii        0              //   unit in Mpc/h    2.0*HaloRadii is CIC BoxSize, if set 0, use HaloRadii = 2 * r200
+#define HaloRadii        4.0            //   unit in Mpc/h    2.0*HaloRadii is CIC BoxSize, if set 0, use HaloRadii = 2 * r200
 
 
 extern int  ThisTask;
@@ -40,6 +41,8 @@ extern char SnapshotFileBase[512];
 extern double Hubble;
 extern double G;
 extern double Omega0;
+extern double RHO_MEAN;
+extern double OMZ;
 
 extern double OmegaLambda;
 extern double HubbleParam;
@@ -51,6 +54,8 @@ extern double UnitEnergy_in_cgs;
 extern FILE *Logfile;
 
 extern double BoxSize;
+
+extern double Softening;
 
 typedef long long peanokey;
 
@@ -137,6 +142,7 @@ typedef struct
   int   velnp[VELNBIN];      /* number of particles inside sphere of radius r*/
   int   trackid;             /* NOTE: HBT2 halo trackid, subfind no use  */
   int   birth;               /* NOTE: HBT2 halo snapshot of birth, when the halo first becomes resolved, subfind no use */
+  float Dfifth;	             /* fifth halo distance, NOTE: only HBT2 used  */
 } halostruct;
 
 extern particle *data;
@@ -173,3 +179,42 @@ struct Hdata {
 extern int ngrid;
 extern double *CICxy, *CICyz, *CICxz;
 #endif
+
+extern int *Nextnode;
+extern int *Father;
+
+extern struct NODE
+{
+  float len;			/*!< sidelength of treenode */
+  float center[3];		/*!< geometrical center of node */
+  union
+  {
+    int suns[8];		/*!< temporary pointers to daughter nodes */
+    struct
+    {
+      float s[3];               /*!< center of mass of node */
+      float mass;            /*!< mass of node */
+      int cost;            /*!< counts the number of interactions in which this node is used */
+      int sibling;         /*!< this gives the next node in the walk in case the current node can be used */
+      int nextnode;        /*!< this gives the next node in case the current node needs to be opened */
+      int father;          /*!< this gives the parent node of each node (or -1 if we have the root node) */
+    }
+    d;
+  }
+  u;
+}
+*Nodes_base,                    /*!< points to the actual memory allocted for the nodes */
+*Nodes;                         /*!< this is a pointer used to access the nodes which is shifted such that Nodes[All.MaxPart] 
+				  gives the first allocated node */
+extern struct potdata 
+{
+  float Pos[3];            /*position*/
+  float Phi;               /*particle  potential for unbinding*/
+} *P;
+
+
+
+
+
+
+

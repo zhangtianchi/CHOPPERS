@@ -40,7 +40,7 @@ vs[j] += data[i].cvel[j];
 }
 for(j = 0; j < 3; j++)
 {
-    center[j]  = fof_periodic_wrap(ss[j] / N200) ;
+    center[j]  = fof_periodic_wrap(ss[j] / N200);
     cm[j] = center[j];
     vcenter[j] =  vs[j] / N200;
     vel[j] = vcenter[j] * sqa ;
@@ -72,7 +72,6 @@ hspin = sqrt(xcenter*xcenter+ycenter*ycenter+zcenter*zcenter) / ( sqrt(2.0) * sq
 return hspin;
 }
 
-#ifdef OUTPE
 /*Use Peebles 1969 paper calculate spin parameter */
 float pspin( int gr, float ke, float pe ) 
 {
@@ -132,10 +131,9 @@ for(j = 0; j < 3; j++)
  // ycenter=  ly / N200;
  // zcenter = lz / N200;
 // spin
-hspin = sqrt(xcenter*xcenter+ycenter*ycenter+zcenter*zcenter) * sqrt( fabs( ke * m200 + pe * m200 ) ) / ( G * pow( m200, 5.0 / 2.0  ) )  ;
+hspin = sqrt(xcenter*xcenter+ycenter*ycenter+zcenter*zcenter) * sqrt( PartMass * fabs( ke  + pe  ) ) / ( G * pow( m200, 5.0 / 2.0  ) )  ;
 return hspin;
 }
-#endif
 
 
 /*

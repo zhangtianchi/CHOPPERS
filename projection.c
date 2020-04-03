@@ -132,7 +132,7 @@ float get_halo_cic(int grp)   //return lbox
 {
 
 #ifdef DEBUG
-fprintf(Logfile,"In get_halo_cic function, begin Projection\n");
+fprintf(Logfile,"In get_halo_cic function, halo %d, begin Projection\n",grp);
 fflush(Logfile);
 #endif
 

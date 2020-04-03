@@ -156,10 +156,10 @@ void load_sub_catalogue(void)
     my_fread(&TotNgroups, sizeof(int), 1, fd);
     my_fread(&Nfiles, sizeof(int), 1, fd);
     my_fread(&Nsubhalos, sizeof(int), 1, fd);
-    printf("In Task %d, Snap=%d, ScaleFactor=%g, rhoc=%g, z=%g, TotNgroups=%d, Nhalo=%d, Nsub=%d\n", ThisTask, SnapshotNum, Time, RHO_CRIT, 1.0/Time-1.0, TotNgroups, Ngroups, Nsubhalos);
+    printf("In Task %d, Snap=%d, rhoc=%g,rhom=%g,omz=%g, Dvir=%g, Dvir=%g rho_mean, z=%g, TotNgroups=%d, Nhalo=%d\n", ThisTask, SnapshotNum, RHO_CRIT, RHO_MEAN, OMZ, DELTA, DELTA/OMZ, 1.0/Time-1.0, TotNgroups, Ngroups);
     fflush(stdout);
 
-    NsubPerHalo = malloc(sizeof(int)*Ngroups);
+    NsubPerHalo = malloc(sizeof(int)*Ngroups);   // HBT2 rank  rank=0 halo, rank!=0 subhalo
     my_fread(NsubPerHalo, sizeof(int), Ngroups, fd);
     FirstSubOfHalo = malloc(sizeof(int)*Ngroups);
     my_fread(FirstSubOfHalo, sizeof(int), Ngroups, fd);
@@ -169,10 +169,10 @@ void load_sub_catalogue(void)
     SubOffset=malloc(sizeof(int)*Nsubhalos);
     my_fread(SubOffset, sizeof(int), Nsubhalos, fd);
 
-    SubParentHalo=malloc(sizeof(int)*Nsubhalos);
+    SubParentHalo=malloc(sizeof(int)*Nsubhalos);    
     my_fread(SubParentHalo, sizeof(int), Nsubhalos, fd);
 
-    Halo_M_Mean200=malloc(sizeof(float)*Ngroups);
+    Halo_M_Mean200=malloc(sizeof(float)*Ngroups);    //  HBT2 replaced by Dfifth
     my_fread(Halo_M_Mean200, sizeof(float), Ngroups, fd);
 
 
@@ -243,6 +243,7 @@ int get_spherical_region_coordinates(int grp)
     struct io_header header;
 
     int len,isub;
+    int rank=0;
     float pos[3];
 
     float *ppos; /* particle positions */
@@ -269,6 +270,7 @@ int get_spherical_region_coordinates(int grp)
     rvir=Halo_R_Crit200[grp];
     mvir=Halo_M_Crit200[grp];
     isub=FirstSubOfHalo[grp];
+    rank=NsubPerHalo[grp];
     pos[0]=SubPos[3*isub];
     pos[1]=SubPos[3*isub+1];
     pos[2]=SubPos[3*isub+2];
@@ -300,7 +302,20 @@ int get_spherical_region_coordinates(int grp)
 
     cellsize = BoxSize / (double) base;
 
-    cells = (int) (rvir / cellsize + 2.0);
+#ifdef MYWORK
+    cells = (int) ceil( 2.0 * rvir / cellsize + 4.0);
+#else
+        cells = (int) ( 3.0 * rvir / cellsize + 1.0);    //    halo range cell
+      //cells = (int) ( 6.0*rvir / cellsize + 2.0);    //    halo range cell
+      //cells = (int) ( 6.0*rvir / cellsize + 1.0);    //    halo range cell
+#endif
+
+#ifdef DEBUG
+fprintf(Logfile,"In halo.c, pos = %g, %g, %g\n", pos[0], pos[1], pos[2]);
+fprintf(Logfile,"In halo.c, cellsize=%g, cells=%d\n",cellsize, cells);
+fprintf(Logfile,"In halo.c, Base=%d, hashbits=%d\n",base,hashbits);
+fflush(Logfile);
+#endif
 
     cx = (int) (pos[0] / cellsize);
     cy = (int) (pos[1] / cellsize);
@@ -339,6 +354,11 @@ int get_spherical_region_coordinates(int grp)
 		else
 		    count += NInFiles[FileTable[hashkey]] - HashTable[hashkey];
 	    }
+
+#ifdef DEBUG
+fprintf(Logfile,"In halo.c, allcount=%d\n",count);
+fflush(Logfile);
+#endif
 
     /* allocate space for positions and velocities */
 
@@ -545,14 +565,22 @@ int get_spherical_region_coordinates(int grp)
     qsort(data, count, sizeof(particle), rad_sort_particle);
 
 #ifdef DEBUG
-fprintf(Logfile,"In halo %d, Orgin trackid=%d, M200=%g, r200=%g, N200=%d\n",grp, SubLen[isub], Halo_M_Crit200[grp], Halo_R_Crit200[grp], (int)(Halo_M_Crit200[grp]/PartMass));
+fprintf(Logfile,"In halo %d, Orgin trackid=%d, M200=%g, r200=%g, N200=%d, rank=%d\n",grp, SubLen[isub], Halo_M_Crit200[grp], Halo_R_Crit200[grp], (int)(Halo_M_Crit200[grp]/PartMass),NsubPerHalo[grp]);
 fflush(Logfile);
 #endif
+#ifdef USEHBTR200
+if(rank==0)
+{
 
     double tmm=0.0;    
     for( i=0; i<count; i++ )
     {
+#ifdef DeltaVir
+        tmm=pow( PartMass * (i+1) / ( DELTA * RHO_CRIT * 4.0 * 3.1415926 /3.0   ) , 1.0 / 3.0  ); // Comoving rvir   vir*rho_crit = virr * rho_mean  at z=0,vir=101,virr=340
+        //tmm=pow( PartMass * (i+1) / ( DELTA / OMZ * RHO_MEAN * 4.0 * 3.1415926 /3.0   ) , 1.0 / 3.0  ); // Comoving rvir   vir*rho_crit = virr * rho_mean  at z=0, om=0.3  => vir=101,virr=340
+#else
         tmm=pow( PartMass * (i+1) / ( 200.0 * RHO_CRIT * 4.0 * 3.1415926 /3.0   ) , 1.0 / 3.0  ); // Comoving r200
+#endif
         if(sqrt(data[i].rad) - tmm > 0)  // tmm * Time is physical unit and Time * sqrt(data[i].rad) is also physical unit, so it is no problem!
         {
         Halo_R_Crit200[grp] = sqrt(data[i].rad);   // Comoving r200
@@ -560,8 +588,34 @@ fflush(Logfile);
         break;
         }
     }
-
-
+}
+else
+{
+        Halo_R_Crit200[grp] = rvir;   // Comoving r200
+#ifdef DeltaVir
+        Halo_M_Crit200[grp] = DELTA*RHO_CRIT*4.0/3.0*3.1415926*pow(rvir,3.0);
+#else
+        Halo_M_Crit200[grp] = 200.0*RHO_CRIT*4.0/3.0*3.1415926*pow(rvir,3.0);
+#endif
+}
+#else
+    double tmm=0.0;    
+    for( i=0; i<count; i++ )
+    {
+#ifdef DeltaVir
+        tmm=pow( PartMass * (i+1) / ( DELTA * RHO_CRIT * 4.0 * 3.1415926 /3.0   ) , 1.0 / 3.0  ); // Comoving rvir   vir*rho_crit = virr * rho_mean  at z=0,vir=101,virr=340
+        //tmm=pow( PartMass * (i+1) / ( DELTA / OMZ * RHO_MEAN * 4.0 * 3.1415926 /3.0   ) , 1.0 / 3.0  ); // Comoving rvir   vir*rho_crit = virr * rho_mean  at z=0, om=0.3  => vir=101,virr=340
+#else
+        tmm=pow( PartMass * (i+1) / ( 200.0 * RHO_CRIT * 4.0 * 3.1415926 /3.0   ) , 1.0 / 3.0  ); // Comoving r200
+#endif
+        if(sqrt(data[i].rad) - tmm > 0)  // tmm * Time is physical unit and Time * sqrt(data[i].rad) is also physical unit, so it is no problem!
+        {
+        Halo_R_Crit200[grp] = sqrt(data[i].rad);   // Comoving r200
+        Halo_M_Crit200[grp] = (i + 1) * PartMass;
+        break;
+        }
+    }
+#endif
 #ifdef DEBUG
 fprintf(Logfile,"In halo %d, after calcr200, M200=%g, r200=%g, r200phy=%g, N200=%d\n",grp ,Halo_M_Crit200[grp], Halo_R_Crit200[grp], Halo_R_Crit200[grp]*Time, (int)(Halo_M_Crit200[grp]/PartMass));
 fflush(Logfile);
@@ -573,8 +627,14 @@ fflush(Logfile);
 
     count = 0;
 
+#ifdef MYWORK
+    //while (data[count].rad <= 4.0 * rvir * rvir) 
     while (data[count].rad <= rvir * rvir) 
 	count++;
+#else
+    while (data[count].rad <= rvir * rvir) 
+	count++;
+#endif
 
 #ifdef DEBUG
 fprintf(Logfile,"In halo %d, after calcr200, count N200=%d\n",grp, count);
@@ -663,6 +723,10 @@ fflush(Logfile);
             break;
         }
 
+#ifdef DEBUG
+fprintf(Logfile,"In halo %d, after calcr200, rhalf=%g\n",grp, Rhalf);
+fflush(Logfile);
+#endif
 
     Vmax=0;
     Rmax=0;
@@ -682,10 +746,16 @@ fflush(Logfile);
 	  }
     Vmax=sqrt(G*PartMass*Vmax/Time); // phy unit
 
+#ifdef DEBUG
+fprintf(Logfile,"In halo %d, after calcr200, Vmax=%g, Rmax=%g\n",grp, Vmax, Rmax);
+fflush(Logfile);
+#endif
+
 #ifdef UNBINDING
     return newn200;
 #else
     return count;
+//return (int)(Halo_M_Crit200[grp]/PartMass);
 #endif
 }
 
