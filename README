@@ -26,7 +26,8 @@ Makefile Options:
     3. HALOID       If set, output halo particle ID into Outputname/halo_id_XXX, This will be useful for tracking halo particles and matching halo.
     4. PROJECTION   If set, output halo CIC projection from three directions into Outputname/halo_pic_XXX, the CIC grid number and region around the halo can be set in the allvars.h. This will be useful for visualizing spatial structure of halo and making animation of halo evolution. Note: This option can consume large amounts of CPU time and memory resources.
     5. DeltaVir     Use  mvir、rvir,  by Bryan1998 fit equation replace r200 and m200.
-    6. USEHBTR200   When halo become subhalo, if use m200, some halo mass become very large, so use HBT2 orgin r200 of subhaloes.
+    6. KERNELDP     if you want Calc KernelDP( Reed2005 AppendixA Method  ) Open it!
+    7. USEHBTR200   When halo become subhalo, if use m200, some halo mass become very large, so use HBT2 orgin r200 of subhaloes.
 
 Output halo properties:
 
