@@ -16,13 +16,15 @@ OPT   +=   -DHBT         # Use Han et al 2018. HBT+ halo catalogue, close this d
 
 #OPT   +=   -DPROJECTION  # Get around halo CIC projection(xy, yz, xz) save in halo_pic_XXX.X, cost more time!!!, please close the UNBINDING first
 
-OPT   +=   -DDEBUG  # Debug every core output in Logfile ( Task_XXX, XXX is core number )
+#OPT   +=   -DDEBUG  # Debug every core output in Logfile ( Task_XXX, XXX is core number )
 
 #OPT   +=   -DSIMPLIFY       # simplify version only calculate mass (drop velocity properties, concenreation, density), very fast!
 
 #OPT   +=   -DDeltaVir       #  use  mvir rvir,  by  Bryan1998 fit equation replace r200 and m200.
 
-OPT   +=   -DUSEHBTR200     #  when halo become subhalo, if use 200rhoc, mass become very large, we use HBT2 orgin r200
+#OPT   +=   -DUSEHBTR200     #  when halo become subhalo, if use 200rhoc, mass become very large, we use HBT2 orgin r200
+
+#OPT   +=   -DKERNELDP       #  if you want Calc KernelDP( Reed2005 AppendixA Method  ) Open it!
 ########################################################################################################################
 
 #OPT   +=   -DMYWORK      #  This is for my work (output density profile, range: [softening,r200], 20 logbins, physical unit, Note: Must turn off unbinding, only concenreation is right, every properties is not accuracy) , please turn off the option if you use this code.
