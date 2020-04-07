@@ -19,6 +19,9 @@ double fof_periodic_wrap(double x);
 int rad_sort_particle(const void *a, const void *b);
 float get_fsub(int nhalo,int *nsub);
 float Dvir(float om_0,float z);
+#ifdef KERNELDP
+double  NumberDens(double radi , double radii[]  , int NN , double rvir );
+#endif
 void density_profile(int gr);
 void fit_density_profile(int gr);
 void vc_profile(int gr);
