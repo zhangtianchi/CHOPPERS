@@ -4,6 +4,34 @@
 #include "allvars.h"
 
 
+#ifdef KERNELDP
+double  NumberDens(double radi , double radii[]  , int NN , double rvir )
+{
+double width,RR;
+double widthl;
+double Kernel;
+int i ;
+
+
+Kernel = 0.0 ;
+width = 0.005 * rvir;
+RR = sqrt( 0.1 * rvir ) ;
+//printf("Func=%g\n",radii[0]);
+
+for( i = 1 ; i < NN ; i++ )
+{
+
+widthl = width / RR * sqrt( radii[i] ) ;
+	Kernel += 0.03174681797 * pow( radi * radii[i] / ( widthl * widthl ) , -1.0 ) * ( exp( -1.0 * ( radii[i] - radi ) * ( radii[i] - radi ) / ( 2.0 * widt
+hl * widthl ) ) -  exp( -1.0 * ( radii[i] + radi ) * ( radii[i] + radi ) / ( 2.0 * widthl * widthl ) ) ) / ( widthl * widthl * widthl  ) ;
+
+}
+return Kernel  ;
+
+
+}
+#endif
+
 
 void density_profile(int gr)
 {
@@ -28,7 +56,14 @@ void density_profile(int gr)
 
     mvir = Halo_M_Crit200[gr];
     rvir = Halo_R_Crit200[gr];
-    
+#ifdef KERNELDP
+    double *DD;
+    int NNN;
+    NNN  = (int)(mvir/PartMass);
+    DD   =  malloc( sizeof( double ) * NNN ) ;
+    for(i = 0 ; i < NNN ; i++ )
+    DD[i] = sqrt( data[i].rad );
+ #endif   
 #ifdef MYWORK
     //double logr0 = log10(BoxSize / pow(TotNumPart,1.0/3.0) / 50.0 / rvir )+log10(rvir); //  2.8softening	
     //double logr0 = log10(0.0039); //  softening	
@@ -59,17 +94,27 @@ n++;
 npbin[j]=n;
 r=((logr0+j*dlogr)+(logr0+(j+1)*dlogr))/2.0;
 denr[j]=pow(10.0,r)/Halo_R_Crit200[gr];
+	
+/*      Kernel Profile           */
+#ifdef KERNELDP
+	    denrho[j] =  PartMass * NumberDens( pow(10.0,denr[j]) , DD , NNN , rvir ) /RHO_CRIT;
+            if( denrho[j] < 1.0   )
+                denrho[j] == 0.0 ;
+            else
+		denrho[j] = log10( denrho[j] )  ;
+#else
 if(n==0)
 denrho[j]=0.0;
 denrho[j]=(PartMass*n)/(4.0/3.0*M_PI*(pow(pow(10,logr0+(j+1)*dlogr),3.0)-pow(pow(10,logr0+j*dlogr),3.0)))/RHO_CRIT;
 //#ifdef DEBUG
 //fprintf(Logfile,"In density.c npbin[%d]=%d,denr[%d]=%g,denrho[%d]=%g\n", j, n,j,denr[j],j,denrho[j]);
 //fflush(Logfile);
-//#endif
+#endif
+	
+#ifdef KERNELDP
+free(DD);
+#endif	
 }
-
-
-
 
 
 
